@@ -4,12 +4,13 @@ import boto
 import time
 import sys
 import argparse
+import itertools
 from datetime import datetime
 from smtplib import SMTP
 
 MAX_STATUS_CHECKS = 20
 
-def generate_image_name(base_name="",instance):
+def generate_image_name(base_name="",instance=None):
     if base_name is None or base_name.strip() == "":
         if "Name" in instance.tags:
             base_name = instance.tags["Name"]
@@ -21,16 +22,19 @@ def generate_image_name(base_name="",instance):
 
 parser = argparse.ArgumentParser(description='ec2-backup-instance')
 parser.add_argument("--id","--instance_id", dest="id", required="true", help="An instance id must be supplied")
-parser.add_argument("--base","--base_name", dest="base_name", help="A base name to be prepended to a timestamp to form the name of the AMI")
+parser.add_argument("--name","--base_name", dest="base_name", help="A base name to be prepended to a timestamp to form the name of the AMI")
 arguments = parser.parse_args()
 
 ec2 = boto.connect_ec2()
-existing_instances = [instance for res.instances in [res for res in ec2.get_all_instances()]]
-if arguments['id'] not in existing_instances
+chain = itertools.chain.from_iterable
+list(chain([res.instances for res in ec2.get_all_instances()]))
+
+existing_instances = [instance for instance in res.instances in [res for res in ec2.get_all_instances()]]
+if arguments['id'] not in existing_instances:
     print "Error: backup not taken.  Supplied instance id must represent an existing instance."
     sys.exit()
 else:
-    target_instance = existing_instances[existing_instances.index(arguments['id'])
+    target_instance = existing_instances[existing_instances.index(arguments['id'])]
 
 image_name = generate_image_name(arguments['base_name'],target_instance)
 
