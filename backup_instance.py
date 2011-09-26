@@ -27,19 +27,19 @@ arguments = parser.parse_args()
 
 ec2 = boto.connect_ec2()
 chain = itertools.chain.from_iterable
-list(chain([res.instances for res in ec2.get_all_instances()]))
+existing_instances = list(chain([res.instances for res in ec2.get_all_instances()]))
 
-existing_instances = [instance for instance in res.instances in [res for res in ec2.get_all_instances()]]
-if arguments['id'] not in existing_instances:
+
+if unicode(arguments.id) not in [instance.id for instance in existing_instances]:
     print "Error: backup not taken.  Supplied instance id must represent an existing instance."
     sys.exit()
 else:
-    target_instance = existing_instances[existing_instances.index(arguments['id'])]
+    target_instance = [instance for instance in existing_instances if instance.id == arguments.id][0]
 
-image_name = generate_image_name(arguments['base_name'],target_instance)
+image_name = generate_image_name(arguments.base_name,target_instance)
 
-ami_id = ec2.create_image(instance_id=instance_id, name=image_name, no_reboot=True)
-print "Started AMI creation of:  " + str(ami_id)
+ami_id = ec2.create_image(instance_id=target_instance.id, name=image_name, no_reboot=True)
+print "Started AMI creation of:  " + str(ami_id) + " with name of " + image_name
 
 #Loop until state is 'available' or until threshold has elapsed
 iterations = 0
@@ -48,12 +48,12 @@ while True:
     time.sleep(60) 
     image = ec2.get_image(ami_id)
     if image.state == "available":
-        message = "Backup succeeded for " + instance_id
+        message = "Backup succeeded for " + target_instance.id
         break
     elif image.state == "pending" and iterations <= MAX_STATUS_CHECKS:
         continue
     else:
-        message = "Backup failed for " + instance_id + " with state of " + image.state
+        message = "Backup failed for " + target_instance.id + " with state of " + image.state
         break
 
 print message
