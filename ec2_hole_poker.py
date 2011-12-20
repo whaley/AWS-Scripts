@@ -14,8 +14,8 @@ def get_arg_parser():
     parser = OptionParser()
     parser.add_option("-g","--group", dest="group",
                       help="Required security group that port modifications will be made on.")
-    parser.add_option("-p","--port", dest="port",
-                      help="Required port number to be opened for the current public IP address.  All other group allowances that specify this port will be removed.")
+    parser.add_option("-p","--port", dest="ports", action="append",
+                      help="Required port number to be opened for the current public IP address.  All other group allowances that specify this port will be removed.  This option can be specified multiple times.")
     return parser
 
 def is_file_less_than_five_minutes_old(f):
@@ -57,13 +57,14 @@ def add_rule_for_port_and_pub_ip(group, ip, port):
 if __name__ == "__main__":
     parser = get_arg_parser()
     (options,args) = parser.parse_args()
-    if options.group == None or options.port == None:
+    if options.group == None or options.ports == None or len(options.ports) == 0:
         parser.print_help()
         exit(-1)
 
     ip = get_public_facing_ip()
     groups = [group for group in EC2_CONN.get_all_security_groups() if options.group == group.name]
     for group in groups:
-        remove_all_rules_for_port(group,options.port)
-        add_rule_for_port_and_pub_ip(group,ip,options.port)
-        print("Port %s opened for %s in group %s" % (options.port,ip,group.name))
+        for port in options.ports:
+            remove_all_rules_for_port(group,port)
+            add_rule_for_port_and_pub_ip(group,ip,port)
+            print("Port %s opened for %s in group %s" % (port,ip,group.name))
