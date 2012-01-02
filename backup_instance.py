@@ -30,11 +30,14 @@ chain = itertools.chain.from_iterable
 existing_instances = list(chain([res.instances for res in ec2.get_all_instances()]))
 
 
-if unicode(arguments.id) not in [instance.id for instance in existing_instances]:
-    print "Error: backup not taken.  Supplied instance id must represent an existing instance."
+if unicode(arguments.id) not in
+    [instance.id for instance in existing_instances]:
+    print "Error: backup not taken.  " +
+        "Supplied instance id must represent an existing instance."
     sys.exit()
 else:
-    target_instance = [instance for instance in existing_instances if instance.id == arguments.id][0]
+    target_instance = [instance for instance in existing_instances
+        if instance.id == arguments.id][0]
 
 image_name = generate_image_name(arguments.base_name,target_instance)
 
@@ -45,7 +48,7 @@ print "Started AMI creation of:  " + str(ami_id) + " with name of " + image_name
 iterations = 0
 while True:
     iterations = iterations + 1
-    time.sleep(60) 
+    time.sleep(60)
     image = ec2.get_image(ami_id)
     if image.state == "available":
         message = "Backup succeeded for " + target_instance.id
