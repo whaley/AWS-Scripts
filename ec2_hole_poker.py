@@ -14,9 +14,11 @@ PUBLIC_IP_TEMP_FILE = os.path.join(tempfile.gettempdir(),"public_ip_address")
 def get_arg_parser():
     parser = OptionParser()
     parser.add_option("-g","--group", dest="group",
-                      help="Required security group that port modifications will be made on.")
+        help="Required security group that port modifications will be made on.")
     parser.add_option("-p","--port", dest="ports", action="append",
-                      help="Required port number to be opened for the current public IP address.  All other group allowances that specify this port will be removed.  This option can be specified multiple times.")
+        help="Required port number to be opened for the current public IP.  " + 
+            "All other group allowances specify this port will be removed." +
+            "This option can be specified multiple times.")
     return parser
 
 def is_file_less_than_five_minutes_old(f):
@@ -25,7 +27,8 @@ def is_file_less_than_five_minutes_old(f):
     return current_time - last_modified < 300
 
 def get_public_facing_ip():
-    if os.path.exists(PUBLIC_IP_TEMP_FILE) and  is_file_less_than_five_minutes_old(PUBLIC_IP_TEMP_FILE):
+    if os.path.exists(PUBLIC_IP_TEMP_FILE) and 
+        is_file_less_than_five_minutes_old(PUBLIC_IP_TEMP_FILE):
         with open(PUBLIC_IP_TEMP_FILE) as f:
             return f.readlines()[0].strip()
     else:    
@@ -63,7 +66,8 @@ if __name__ == "__main__":
         exit(-1)
 
     ip = get_public_facing_ip()
-    groups = [group for group in EC2_CONN.get_all_security_groups() if options.group == group.name]
+    groups = [group for group in EC2_CONN.get_all_security_groups() 
+        if options.group == group.name]
     for group in groups:
         for port in options.ports:
             remove_all_rules_for_port(group,port)

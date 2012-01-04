@@ -9,11 +9,13 @@ function outputChoices {
         ((count++))
     done
 
-    echo -n "Select one of [0-$numberOfDirectories] - any other input leaves creds unchanged:  "
+    echo -n "Select one of [0-$numberOfDirectories] - " \
+        "any other input leaves creds unchanged:  "
 }
 
 function changeCredDirectory {
-    if [[ -n $(echo -n $inputChoice | grep '^[0-9][0-9]*$')  && $inputChoice -ge 0 && $inputChoice -le $numberOfDirectories ]]
+    if [[ -n $(echo -n $inputChoice | grep '^[0-9][0-9]*$')  && $inputChoice \
+        -ge 0 && $inputChoice -le $numberOfDirectories ]]
     then
         newCredDirectory=${directories[$inputChoice]} 
         ln -nsf $newCredDirectory $BASE_DIRECTORY/current
