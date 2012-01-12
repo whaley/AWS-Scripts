@@ -18,8 +18,8 @@ def generate_image_name(base_name="",instance=None):
             base_name = instance.id
 
     now = datetime.now()
-    return base_name + "-" + str(now.year) + "." + str(now.month).zfill(2) + "."
-        + str(now.day).zfill(2) + "." + str(now.hour).zfill(2)
+    return base_name + "-" + str(now.year) + "." + str(now.month).zfill(2) \
+        + "." + str(now.day).zfill(2) + "." + str(now.hour).zfill(2) \
         + str(now.minute).zfill(2)
 
 parser = argparse.ArgumentParser(description='ec2-backup-instance')
@@ -34,9 +34,9 @@ chain = itertools.chain.from_iterable
 existing_instances = list(
     chain([res.instances for res in ec2.get_all_instances()]))
 
-if unicode(arguments.id) not in
-    [instance.id for instance in existing_instances]:
-    print "Error: backup not taken.  " +
+if unicode(arguments.id) not in \
+[instance.id for instance in existing_instances]:
+    print "Error: backup not taken.  " + \
         "Supplied instance id must represent an existing instance."
     sys.exit()
 else:
@@ -61,7 +61,7 @@ while True:
     elif image.state == "pending" and iterations <= MAX_STATUS_CHECKS:
         continue
     else:
-        message = "Backup failed for " + target_instance.id + 
+        message = "Backup failed for " + target_instance.id + \
             " with state of " + image.state
         break
 

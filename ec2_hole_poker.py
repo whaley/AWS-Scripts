@@ -27,7 +27,7 @@ def is_file_less_than_five_minutes_old(f):
     return current_time - last_modified < 300
 
 def get_public_facing_ip():
-    if os.path.exists(PUBLIC_IP_TEMP_FILE) and 
+    if os.path.exists(PUBLIC_IP_TEMP_FILE) and \
         is_file_less_than_five_minutes_old(PUBLIC_IP_TEMP_FILE):
         with open(PUBLIC_IP_TEMP_FILE) as f:
             return f.readlines()[0].strip()
