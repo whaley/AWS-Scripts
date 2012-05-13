@@ -32,7 +32,7 @@ def get_public_facing_ip():
         with open(PUBLIC_IP_TEMP_FILE) as f:
             return f.readlines()[0].strip()
     else:    
-        public_ip = urllib.urlopen("http://whatismyip.org").read()
+        public_ip = urllib.urlopen("http://ip.jasonwhaley.com").read()
         with open(PUBLIC_IP_TEMP_FILE,"w") as f:
             f.write(public_ip)
         return public_ip
