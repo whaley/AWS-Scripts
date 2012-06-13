@@ -6,7 +6,6 @@ import sys
 import argparse
 import itertools
 from datetime import datetime
-from smtplib import SMTP
 
 MAX_STATUS_CHECKS = 20
 
@@ -28,6 +27,7 @@ parser.add_argument("--id","--instance_id", dest="id",required="true",
 parser.add_argument("--name","--base_name", dest="base_name",
     help="Base name prepended to a timestamp to forming the name of the AMI")
 arguments = parser.parse_args()
+
 
 ec2 = boto.connect_ec2()
 chain = itertools.chain.from_iterable

@@ -2,10 +2,8 @@
 
 import urllib
 import boto
-import sys
 import tempfile
 import os
-import time
 from optparse import OptionParser
 
 EC2_CONN = boto.connect_ec2()
@@ -21,21 +19,18 @@ def get_arg_parser():
             "This option can be specified multiple times.")
     return parser
 
-def is_file_less_than_five_minutes_old(f):
-    current_time = time.time()
-    last_modified = os.path.getmtime(f)
-    return current_time - last_modified < 300
-
 def get_public_facing_ip():
-    if os.path.exists(PUBLIC_IP_TEMP_FILE) and \
-        is_file_less_than_five_minutes_old(PUBLIC_IP_TEMP_FILE):
+    public_ip = urllib.urlopen("http://ip.jasonwhaley.com").read()
+    with open(PUBLIC_IP_TEMP_FILE,"w") as f:
+        f.write(public_ip)
+    return public_ip
+
+        
+def read_ip_from_temp_file():
+    if os.path.exists(PUBLIC_IP_TEMP_FILE):
         with open(PUBLIC_IP_TEMP_FILE) as f:
             return f.readlines()[0].strip()
-    else:    
-        public_ip = urllib.urlopen("http://ip.jasonwhaley.com").read()
-        with open(PUBLIC_IP_TEMP_FILE,"w") as f:
-            f.write(public_ip)
-        return public_ip
+        
 
 def remove_all_rules_for_port(group,port):
     for rule in group.rules:
@@ -66,10 +61,12 @@ if __name__ == "__main__":
         exit(-1)
 
     ip = get_public_facing_ip()
-    groups = [group for group in EC2_CONN.get_all_security_groups() 
-        if options.group == group.name]
-    for group in groups:
-        for port in options.ports:
-            remove_all_rules_for_port(group,port)
-            add_rule_for_port_and_pub_ip(group,ip,port)
-            print("Port %s opened for %s in group %s" % (port,ip,group.name))
+    if ip != read_ip_from_temp_file:
+        groups = [group for group in EC2_CONN.get_all_security_groups() 
+            if options.group == group.name]
+        
+        for group in groups:
+            for port in options.ports:
+                remove_all_rules_for_port(group,port)
+                add_rule_for_port_and_pub_ip(group,ip,port)
+                print("Port %s opened for %s in group %s" % (port,ip,group.name))
